@@ -1,0 +1,40 @@
+# ── API keys — NEVER commit these ─────────────────────────────────────────
+.env
+*.env
+!.env.example          # keep the template
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+venv/
+env/
+.venv/
+ENV/
+
+# ── Data files — generated at build time, don't commit ───────────────────
+mvp/web/data/intents_raw.csv
+mvp/web/data/data_manifest.csv
+mvp/web/data/sample_conversations.json
+
+# ── OS ────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log

@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hotel Mirror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ─────────────────────────────────────────────────────
+     Hotel Mirror — Bob W design language
+     Dark charcoal header · Warm sandy canvas · Cream card surfaces
+  ───────────────────────────────────────────────────── */
+  :root {
+    /* Canvas — warm sandy parchment, like Bob W's printed collateral */
+    --canvas:        #E8DFD0;
+
+    /* Header — Bob W dark nav, near-black charcoal */
+    --header-bg:     #1C1914;
+    --header-border: #2E2A24;
+    --header-text:   #F0EAE0;
+    --header-sub:    #8A8278;
+
+    /* Surfaces — bright cream so they "lift" off the sandy canvas */
+    --surface:       #F5F0E8;   /* panels, search box */
+    --surface-alt:   #FAF7F2;   /* table odd rows */
+    --surface-even:  #EFE9DF;   /* table even rows — still warm but slightly deeper */
+    --surface-hover: #E8E2D6;   /* row hover */
+
+    /* Borders */
+    --border:        #D0C8BA;
+    --border-strong: #B8B0A4;
+
+    /* Typography — very high contrast on cream surfaces */
+    --ink:           #18140E;   /* primary — near-black warm */
+    --ink-2:         #3A342C;   /* secondary — dark warm brown, fully legible */
+    --ink-3:         #6A6258;   /* tertiary — warm medium gray */
+    --ink-ghost:     #9A9088;   /* placeholder / hints */
+
+    /* Accent — Bob W forest olive, rich enough for cream bg */
+    --olive:         #3E5C28;
+    --olive-hover:   #4E7032;
+    --olive-pale:    #E0EAD4;   /* pill active bg */
+    --olive-text:    #2E4A1C;   /* text on pale olive bg */
+
+    /* Warm brown — for monetary figures and highlights */
+    --umber:         #7A5028;
+    --umber-pale:    #F0E4D0;
+
+    /* Error */
+    --rose:          #8A2C20;
+    --rose-pale:     #F5E0DC;
+
+    --radius:        5px;
+    --radius-lg:     10px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header — dark Bob W style ─────────────────────── */
+  .site-header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--header-text);
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+  }
+  .logo em { font-style: italic; color: #A8C488; }
+  .logo-divider {
+    width: 1px; height: 18px;
+    background: var(--header-border);
+    margin: 0 14px;
+    align-self: center;
+  }
+  .logo-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--header-sub);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: var(--header-sub);
+    letter-spacing: 0.05em;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--header-sub);
+  }
+  .status-dot.live {
+    background: #A8C488;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  /* ── Main ──────────────────────────────────────────── */
+  .main { padding: 2.5rem; max-width: 1800px; margin: 0 auto; }
+
+  /* ── Hero ─────────────────────────────────────────── */
+  .hero {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-text h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 42px;
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .hero-text h1 em { font-style: italic; color: var(--olive); }
+  .hero-text p {
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .hero-tag {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-3);
+    text-align: right;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  /* ── Search panel ─────────────────────────────────── */
+  .search-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 4px rgba(30,24,16,.06);
+  }
+
+  .panel-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+
+  .panel-row {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .panel-row:last-child { margin-bottom: 0; }
+
+  /* Markets section */
+  .markets-block { margin-bottom: 1.25rem; }
+  .markets-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .countries { display: flex; gap: 6px; flex-wrap: wrap; }
+  .c-pill {
+    padding: 5px 11px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--ink-3);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex; align-items: center; gap: 5px;
+    line-height: 1;
+  }
+  .c-pill:hover { border-color: var(--olive); color: var(--olive-text); background: var(--olive-pale); }
+  .c-pill.on {
+    border-color: var(--olive);
+    background: var(--olive-pale);
+    color: var(--olive-text);
+    font-weight: 500;
+  }
+  .c-pill .flag { font-size: 13px; }
+  .c-ctrls { display: flex; gap: 12px; }
+  .c-ctrl {
+    font-size: 11px;
+    color: var(--ink-3);
+    background: none; border: none;
+    cursor: pointer; font-family: inherit;
+    letter-spacing: 0.02em;
+    padding: 0;
+    transition: color 0.12s;
+  }
+  .c-ctrl:hover { color: var(--olive); }
+
+  /* Fields */
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .field input, .field select {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--olive);
+    box-shadow: 0 0 0 3px rgba(62,92,40,.08);
+  }
+  .field input::placeholder { color: var(--ink-ghost); }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239A9088' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+  .field.grow { flex: 1; min-width: 160px; }
+
+  /* Search button */
+  .search-btn {
+    background: var(--ink);
+    color: var(--canvas);
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 10px 26px;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+    align-self: flex-end;
+  }
+  .search-btn:hover { background: var(--ink-2); }
+  .search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .search-btn svg { width: 13px; height: 13px; }
+
+  /* ── Status ───────────────────────────────────────── */
+  .status-bar {
+    font-size: 11.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.03em;
+    min-height: 20px;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .spinner {
+    width: 12px; height: 12px;
+    border: 2px solid var(--border);
+    border-top-color: var(--olive);
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Summary chips ────────────────────────────────── */
+  .summary-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem;
+  }
+  .chip {
+    font-size: 11px; padding: 4px 12px; border-radius: 20px;
+    border: 1.5px solid; display: inline-flex; align-items: center; gap: 4px;
+    font-weight: 500;
+  }
+  .chip.total  { border-color: var(--border-strong); color: var(--ink-2); background: var(--surface); }
+  .chip.market { border-color: var(--olive); color: var(--olive-text); background: var(--olive-pale); }
+
+  /* ── Table ────────────────────────────────────────── */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 2px 8px rgba(30,24,16,.07);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    min-width: 1300px;
+  }
+
+  thead {
+    background: var(--ink);
+    position: sticky; top: 62px; z-index: 10;
+  }
+  thead th {
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9A9488;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    border-right: 1px solid #2C2820;
+    transition: color 0.12s;
+  }
+  thead th:last-child { border-right: none; }
+  thead th:hover { color: #E0D8CC; }
+  thead th.sorted { color: #A8C488; }
+
+  /* Row styles */
+  tbody tr {
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.08s;
+  }
+  tbody tr:nth-child(even) { background: var(--surface-even); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-hover); }
+
+  td {
+    padding: 13px 15px;
+    vertical-align: top;
+    color: var(--ink-2);
+    line-height: 1.4;
+    border-right: 1px solid var(--border);
+  }
+  td:last-child { border-right: none; }
+  td.ink { color: var(--ink); }
+
+  /* Property name */
+  .prop-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    display: block;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .prop-type {
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-top: 3px;
+    display: block;
+  }
+
+  /* Country badge */
+  .flag-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--ink-2); white-space: nowrap;
+    font-weight: 500;
+  }
+
+  /* Stat pills */
+  .stat {
+    display: inline-block;
+    background: rgba(30,24,14,.07);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: var(--ink-2);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .stat.money {
+    color: var(--umber);
+    background: var(--umber-pale);
+    border-color: #D4B898;
+  }
+
+  /* Contact stacks */
+  .contact-stack { display: flex; flex-direction: column; gap: 3px; min-width: 160px; }
+  .contact-name {
+    font-size: 13px; font-weight: 500; color: var(--ink);
+    white-space: nowrap;
+  }
+  .contact-co { font-size: 11px; color: var(--ink-3); font-style: italic; }
+  .contact-link {
+    font-size: 11px; color: var(--olive);
+    text-decoration: none; display: inline-flex; align-items: center; gap: 3px;
+    font-weight: 500; transition: color 0.12s;
+  }
+  .contact-link:hover { color: var(--olive-hover); text-decoration: underline; }
+
+  /* Source chip */
+  .source-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--ink); color: var(--canvas);
+    border-radius: 4px; padding: 4px 10px;
+    font-size: 11px; font-weight: 500; text-decoration: none;
+    white-space: nowrap; letter-spacing: 0.03em;
+    transition: background 0.12s;
+  }
+  .source-chip:hover { background: var(--ink-2); }
+
+  /* ── Empty ────────────────────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 6rem 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .empty-glyph {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 72px; color: var(--border); line-height: 1; margin-bottom: 1rem;
+  }
+  .empty h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 26px; font-weight: 300; color: var(--ink-2); margin-bottom: 6px;
+  }
+  .empty p { font-size: 13px; color: var(--ink-3); }
+
+  /* ── Error ────────────────────────────────────────── */
+  .err-box {
+    background: var(--rose-pale); border: 1px solid #DDBAB4;
+    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+    font-size: 12.5px; color: var(--rose); line-height: 1.6;
+    word-break: break-all; white-space: pre-wrap;
+  }
+  .err-box strong { font-size: 14px; display: block; margin-bottom: 6px; }
+
+  /* ── Footer ───────────────────────────────────────── */
+  .site-footer {
+    background: var(--header-bg);
+    border-top: 1px solid var(--header-border);
+    margin-top: 4rem;
+    padding: 1.5rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 16px; font-weight: 300; letter-spacing: 0.1em;
+    color: #706860;
+  }
+  .footer-right { font-size: 11px; color: #504840; letter-spacing: 0.05em; }
+
+  /* ── Broker bar ───────────────────────────────────────── */
+  .broker-bar {
+    margin-bottom: 1.75rem;
+  }
+  .broker-bar-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .broker-bar-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .broker-bar-label .no-api-note {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--ink-ghost);
+    font-style: italic;
+  }
+  .brokers {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .broker-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 500;
+    transition: border-color 0.12s, background 0.12s, color 0.12s;
+    box-shadow: 0 1px 2px rgba(30,24,14,.05);
+    white-space: nowrap;
+  }
+  .broker-link:hover {
+    border-color: var(--olive);
+    background: var(--surface-alt);
+    color: var(--olive);
+  }
+  .broker-link .brank {
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--ink-3);
+    letter-spacing: 0.03em;
+  }
+  .broker-link .ext-icon {
+    font-size: 10px;
+    color: var(--ink-ghost);
+    margin-left: 2px;
+  }
+
+  @media (max-width: 900px) {
+    .main { padding: 1.25rem; }
+    .site-header { padding: 0 1.25rem; }
+    .panel-row { flex-direction: column; gap: 1rem; }
+    .hero { flex-direction: column; gap: 0.5rem; }
+    .hero-tag { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="logo">
+    Hotel<em>Mirror</em>
+    <span class="logo-divider"></span>
+    <span class="logo-sub">Lease Intelligence</span>
+  </div>
+  <div class="header-right">
+    <span id="headerStatus">Ready</span>
+    <span class="status-dot" id="statusDot"></span>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Find the right building.<br><em>Before someone else does.</em></h1>
+      <p>Hotels & buildings for long-term lease · DE · NL · FR · BE · LU · CH · CZ · GB · IE · IT · ES · PT · GR · PL</p>
+    </div>
+    <div class="hero-tag">Master lease · Management contract<br>Operator never buys</div>
+  </div>
+
+  <!-- Broker quick-access bar -->
+  <div class="broker-bar">
+    <div class="broker-bar-label">
+      Top brokers — direct links
+      <span class="no-api-note">No public APIs exist for hotel brokerage · AI web search is the best available method</span>
+    </div>
+    <div class="brokers">
+      <a class="broker-link" href="https://www.christie.com/business-search/?sector=hotels&transactiontype=let" target="_blank">
+        Christie &amp; Co <span class="brank">Hotels</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.jll.com/en-gb/properties/hotels" target="_blank">
+        JLL <span class="brank">Hotels &amp; Hospitality</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.cbre.com/properties?propertyType=hotels" target="_blank">
+        CBRE <span class="brank">Hotels</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.savills.co.uk/find-hotel-property/" target="_blank">
+        Savills <span class="brank">Hotels</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.colliers.com/en-gb/properties/hotel-listings" target="_blank">
+        Colliers <span class="brank">Hotels</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.knightfrank.com/hotels" target="_blank">
+        Knight Frank <span class="brank">Hotels</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://realestate.bnpparibas.com/en/sectors/hotels" target="_blank">
+        BNP Paribas RE <span class="brank">Hotels</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.cushmanwakefield.com/en/services/hospitality" target="_blank">
+        Cushman &amp; Wakefield <span class="brank">Hospitality</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://hvs.com/brokerage" target="_blank">
+        HVS <span class="brank">Brokerage</span><span class="ext-icon">↗</span>
+      </a>
+      <a class="broker-link" href="https://www.hospitalitynet.org/news/4000002.html" target="_blank">
+        Hospitality Net <span class="brank">Listings</span><span class="ext-icon">↗</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Search panel -->
+  <div class="search-panel">
+    <div class="markets-block">
+      <div class="markets-top">
+        <span class="panel-section-label">Markets</span>
+        <div class="c-ctrls">
+          <button class="c-ctrl" onclick="selAll()">Select all</button>
+          <button class="c-ctrl" onclick="clrAll()">Clear all</button>
+        </div>
+      </div>
+      <div class="countries" id="countries">
+          <button class="c-pill on" data-code="DE"><span class="flag">🇩🇪</span>Germany</button>
+          <button class="c-pill on" data-code="NL"><span class="flag">🇳🇱</span>Netherlands</button>
+          <button class="c-pill on" data-code="FR"><span class="flag">🇫🇷</span>France</button>
+          <button class="c-pill on" data-code="BE"><span class="flag">🇧🇪</span>Belgium</button>
+          <button class="c-pill on" data-code="LU"><span class="flag">🇱🇺</span>Luxembourg</button>
+          <button class="c-pill on" data-code="CH"><span class="flag">🇨🇭</span>Switzerland</button>
+          <button class="c-pill on" data-code="CZ"><span class="flag">🇨🇿</span>Czech Rep.</button>
+          <button class="c-pill on" data-code="GB"><span class="flag">🇬🇧</span>United Kingdom</button>
+          <button class="c-pill on" data-code="IE"><span class="flag">🇮🇪</span>Ireland</button>
+          <button class="c-pill on" data-code="IT"><span class="flag">🇮🇹</span>Italy</button>
+          <button class="c-pill on" data-code="ES"><span class="flag">🇪🇸</span>Spain</button>
+          <button class="c-pill on" data-code="PT"><span class="flag">🇵🇹</span>Portugal</button>
+          <button class="c-pill on" data-code="GR"><span class="flag">🇬🇷</span>Greece</button>
+          <button class="c-pill on" data-code="PL"><span class="flag">🇵🇱</span>Poland</button>
+          <button class="c-ctrl" onclick="selAll()">All</button>
+          <button class="c-ctrl" onclick="clrAll()">None</button>
+        </div>
+      </div>
+
+    <div class="panel-row">
+      <div class="field grow">
+        <label>Property type</label>
+        <select id="propType">
+          <option value="">Any type</option>
+          <option value="Hotel">Hotel</option>
+          <option value="Apart-hotel">Apart-hotel</option>
+          <option value="Office conversion">Office conversion</option>
+          <option value="Residential building">Residential building</option>
+          <option value="Mixed-use">Mixed-use building</option>
+        </select>
+      </div>
+      <div class="field grow">
+        <label>City / region</label>
+        <input type="text" id="city" placeholder="Any city or region" />
+      </div>
+      <div class="field" style="width:130px">
+        <label>Min. units</label>
+        <input type="number" id="minUnits" placeholder="Any" min="1" />
+      </div>
+      <div class="field grow">
+        <label>Additional notes</label>
+        <input type="text" id="notes" placeholder="e.g. long-term lease, 15+ years" />
+      </div>
+      <button class="search-btn" id="searchBtn" onclick="runSearch()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="6.5" cy="6.5" r="5"/><path d="m10.5 10.5 4 4"/>
+        </svg>
+        Search listings
+      </button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar" id="statusBar"></div>
+
+  <!-- Summary chips -->
+  <div class="summary-row" id="summaryRow" style="display:none"></div>
+
+  <!-- Results -->
+  <div id="resultsArea"></div>
+
+</main>
+
+<footer class="site-footer">
+  <span class="footer-logo">Hotel Mirror</span>
+  <span class="footer-right">Lease intelligence · Master lease · Management contract · Never buys</span>
+</footer>
+
+<script>
+const COUNTRY_NAMES = {DE:'Germany',NL:'Netherlands',FR:'France',BE:'Belgium',LU:'Luxembourg',CH:'Switzerland',CZ:'Czech Republic',GB:'United Kingdom',IE:'Ireland',IT:'Italy',ES:'Spain',PT:'Portugal',GR:'Greece',PL:'Poland'};
+const FLAGS = {DE:'🇩🇪',NL:'🇳🇱',FR:'🇫🇷',BE:'🇧🇪',LU:'🇱🇺',CH:'🇨🇭',CZ:'🇨🇿',GB:'🇬🇧',IE:'🇮🇪',IT:'🇮🇹',ES:'🇪🇸',PT:'🇵🇹',GR:'🇬🇷',PL:'🇵🇱'};
+const ALL_CODES = ['DE','NL','FR','BE','LU','CH','CZ','GB','IE','IT','ES','PT','GR','PL'];
+let active = new Set(ALL_CODES);
+let busy = false;
+let allData = [];
+let sortCol = null, sortAsc = true;
+
+// ── API key — read from environment, never hardcoded ─────
+// Local dev:  set ANTHROPIC_API_KEY in your .env file (loaded by the server)
+// Render:     set ANTHROPIC_API_KEY in the Render dashboard → Environment
+// The variable below is injected at runtime by the server/build step.
+const API_KEY = typeof ANTHROPIC_API_KEY !== 'undefined' ? ANTHROPIC_API_KEY : '';
+
+// Country toggles
+document.querySelectorAll('.c-pill').forEach(b => {
+  b.addEventListener('click', () => {
+    const c = b.dataset.code;
+    active.has(c) ? (active.delete(c), b.classList.remove('on')) : (active.add(c), b.classList.add('on'));
+  });
+});
+function selAll() { ALL_CODES.forEach(c=>active.add(c)); document.querySelectorAll('.c-pill').forEach(b=>b.classList.add('on')); }
+function clrAll() { active.clear(); document.querySelectorAll('.c-pill').forEach(b=>b.classList.remove('on')); }
+
+// Status helpers
+function setStatus(msg, spin=false) {
+  const bar = document.getElementById('statusBar');
+  bar.innerHTML = spin ? `<span class="spinner"></span>${msg}` : msg;
+  const dot = document.getElementById('statusDot');
+  const hdr = document.getElementById('headerStatus');
+  dot.className = spin ? 'status-dot live' : 'status-dot';
+  hdr.textContent = spin ? 'Searching…' : (msg ? 'Done' : 'Ready');
+}
+
+// API call with agentic loop
+async function callClaude(messages, system) {
+  const tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  for (let i = 0; i < 8; i++) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 5000,
+        system,
+        tools,
+        messages
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`API ${res.status}: ${data.error?.message || JSON.stringify(data)}`);
+    if (data.stop_reason === 'end_turn') {
+      return data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    }
+    if (data.stop_reason === 'tool_use') {
+      messages.push({ role: 'assistant', content: data.content });
+      messages.push({
+        role: 'user',
+        content: data.content.filter(b=>b.type==='tool_use')
+          .map(b=>({ type:'tool_result', tool_use_id:b.id, content:'' }))
+      });
+      continue;
+    }
+    return data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+  }
+  return '';
+}
+
+function parseJSON(raw) {
+  raw = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+  const s = raw.indexOf('['), e = raw.lastIndexOf(']');
+  if (s===-1||e===-1) return null;
+  try { return JSON.parse(raw.slice(s,e+1)); } catch(e) { return null; }
+}
+
+async function runSearch() {
+  if (busy) return;
+  busy = true;
+  document.getElementById('searchBtn').disabled = true;
+  document.getElementById('resultsArea').innerHTML = '';
+  document.getElementById('summaryRow').style.display = 'none';
+  allData = [];
+
+  const countries = active.size > 0
+    ? [...active].map(c=>COUNTRY_NAMES[c]).join(', ')
+    : ALL_CODES.map(c=>COUNTRY_NAMES[c]).join(', ');
+
+  const propType  = document.getElementById('propType').value;
+  const city      = document.getElementById('city').value;
+  const minUnits  = document.getElementById('minUnits').value;
+  const notes     = document.getElementById('notes').value;
+
+  setStatus(`Scanning ${countries}…`, true);
+
+  const system = `You are a specialist real estate researcher for European serviced apartment operators (Bob W, Zoku, Wilde Aparthotels, Edyn, Numa). Find hotels, apart-hotels, and buildings available for LONG-TERM LEASE — master lease or management contract only. The operator never buys.
+
+Search broker portals: Christie & Co, JLL Hotels, CBRE Hotels, Savills, BNP Paribas Real Estate, Colliers International, Knight Frank, HCRE, Hospitality Advisors. Also search: Immobilienscout24, Funda, SeLoger, Immowelt, Immobiliare.it, idealista.
+
+Return ONLY a valid JSON array. No markdown fences, no preamble, no text outside the array. Include up to 12 results. Each object must have exactly these keys (use null for unknown):
+{
+  "property_name": string,
+  "address": string,
+  "city": string,
+  "country_code": "DE"|"NL"|"FR"|"BE"|"LU"|"CH"|"CZ"|"GB"|"IE"|"IT"|"ES"|"PT"|"GR"|"PL",
+  "property_type": "Hotel"|"Apart-hotel"|"Office conversion"|"Residential building"|"Mixed-use",
+  "rooms": string,
+  "sqm": string,
+  "floors": string,
+  "year_built": string,
+  "lease_term": string,
+  "asking_rent": string,
+  "available_from": string,
+  "landlord_name": string,
+  "landlord_company": string,
+  "landlord_email": string,
+  "landlord_phone": string,
+  "landlord_website": string,
+  "broker_name": string,
+  "broker_company": string,
+  "broker_email": string,
+  "broker_phone": string,
+  "source_url": string,
+  "source_name": string,
+  "notes": string
+}`;
+
+  const filters = [
+    propType && `Type: ${propType}`,
+    city && `City: ${city}`,
+    minUnits && `Min. units: ${minUnits}`,
+    notes
+  ].filter(Boolean).join('; ');
+
+  const userMsg = `Find hotels and buildings available for long-term lease for serviced apartment operators in: ${countries}.${filters ? ' Filters: ' + filters + '.' : ''} Search the web now across broker sites and property portals. Return up to 12 results as a JSON array with full contact details for both landlords and brokers.`;
+
+  try {
+    const raw = await callClaude([{ role:'user', content: userMsg }], system);
+    const data = parseJSON(raw);
+
+    if (!data || !data.length) {
+      setStatus('');
+      document.getElementById('resultsArea').innerHTML = `
+        <div class="empty">
+          <div class="empty-glyph">⌂</div>
+          <h2>No listings found</h2>
+          <p>Try broadening your search — fewer filters or more countries.</p>
+        </div>`;
+    } else {
+      allData = data;
+      setStatus(`${data.length} propert${data.length===1?'y':'ies'} found across ${countries}`);
+      renderTable(data);
+      renderSummary(data);
+    }
+  } catch(err) {
+    setStatus('');
+    document.getElementById('resultsArea').innerHTML = `
+      <div class="err-box">
+        <strong>Search failed</strong>${err.message}
+      </div>`;
+  }
+
+  busy = false;
+  document.getElementById('searchBtn').disabled = false;
+}
+
+// ── Render table ──────────────────────────────────────────
+const COLS = [
+  { key:'property_name', label:'Property', sortable:true },
+  { key:'city',          label:'City', sortable:true },
+  { key:'country_code',  label:'Country', sortable:true },
+  { key:'property_type', label:'Type', sortable:true },
+  { key:'rooms',         label:'Rooms', sortable:false },
+  { key:'sqm',           label:'SQM', sortable:false },
+  { key:'lease_term',    label:'Lease term', sortable:false },
+  { key:'asking_rent',   label:'Asking rent', sortable:false },
+  { key:'address',       label:'Address', sortable:false },
+  { key:'available_from',label:'Available', sortable:false },
+  { key:'landlord',      label:'Landlord', sortable:false },
+  { key:'broker',        label:'Broker', sortable:false },
+  { key:'source',        label:'Source', sortable:false },
+];
+
+function sortData(key) {
+  if (sortCol === key) sortAsc = !sortAsc;
+  else { sortCol = key; sortAsc = true; }
+  const sorted = [...allData].sort((a,b) => {
+    const av = a[key]||'', bv = b[key]||'';
+    return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  renderTable(sorted);
+}
+
+function renderTable(data) {
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+
+  const table = document.createElement('table');
+
+  // thead
+  const thead = document.createElement('thead');
+  const hrow = document.createElement('tr');
+  COLS.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c.label;
+    if (c.sortable && c.key !== 'landlord' && c.key !== 'broker' && c.key !== 'source') {
+      th.classList.toggle('sorted', sortCol === c.key);
+      th.onclick = () => sortData(c.key);
+      th.title = 'Click to sort';
+    }
+    hrow.appendChild(th);
+  });
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  // tbody
+  const tbody = document.createElement('tbody');
+  data.forEach(p => {
+    const tr = document.createElement('tr');
+
+    // Property name + type
+    const tdName = document.createElement('td');
+    tdName.innerHTML = `<span class="prop-name">${p.property_name||'—'}</span><span class="prop-type">${p.property_type||''}</span>`;
+    tr.appendChild(tdName);
+
+    // City
+    const tdCity = document.createElement('td');
+    tdCity.className = 'muted';
+    tdCity.textContent = p.city || '—';
+    tr.appendChild(tdCity);
+
+    // Country
+    const tdCountry = document.createElement('td');
+    const flag = FLAGS[p.country_code] || '';
+    tdCountry.innerHTML = `<span class="flag-badge">${flag} ${COUNTRY_NAMES[p.country_code]||p.country_code||'—'}</span>`;
+    tr.appendChild(tdCountry);
+
+    // Type (hidden — shown in property name cell)
+    const tdType = document.createElement('td');
+    tdType.className = 'muted';
+    tdType.textContent = p.property_type || '—';
+    tr.appendChild(tdType);
+
+    // Rooms
+    const tdRooms = document.createElement('td');
+    tdRooms.innerHTML = p.rooms ? `<span class="stat">${p.rooms}</span>` : '<span style="color:var(--ink-3)">—</span>';
+    tr.appendChild(tdRooms);
+
+    // SQM
+    const tdSqm = document.createElement('td');
+    tdSqm.innerHTML = p.sqm ? `<span class="stat">${p.sqm}</span>` : '<span style="color:var(--ink-3)">—</span>';
+    tr.appendChild(tdSqm);
+
+    // Lease term
+    const tdLease = document.createElement('td');
+    tdLease.className = 'muted';
+    tdLease.textContent = p.lease_term || '—';
+    tr.appendChild(tdLease);
+
+    // Asking rent
+    const tdRent = document.createElement('td');
+    tdRent.innerHTML = p.asking_rent ? `<span class="stat money">${p.asking_rent}</span>` : '<span style="color:var(--ink-3)">—</span>';
+    tr.appendChild(tdRent);
+
+    // Address
+    const tdAddr = document.createElement('td');
+    tdAddr.className = 'muted';
+    tdAddr.style.maxWidth = '180px';
+    tdAddr.style.whiteSpace = 'normal';
+    tdAddr.style.fontSize = '12px';
+    tdAddr.textContent = p.address || '—';
+    tr.appendChild(tdAddr);
+
+    // Available from
+    const tdAvail = document.createElement('td');
+    tdAvail.className = 'muted';
+    tdAvail.textContent = p.available_from || '—';
+    tr.appendChild(tdAvail);
+
+    // Landlord
+    const tdLL = document.createElement('td');
+    const llParts = [];
+    if (p.landlord_name) llParts.push(`<span class="contact-name">${p.landlord_name}</span>`);
+    if (p.landlord_company) llParts.push(`<span class="contact-co">${p.landlord_company}</span>`);
+    if (p.landlord_email) llParts.push(`<a class="contact-link" href="mailto:${p.landlord_email}">✉ ${p.landlord_email}</a>`);
+    if (p.landlord_phone) llParts.push(`<a class="contact-link" href="tel:${p.landlord_phone}">✆ ${p.landlord_phone}</a>`);
+    if (p.landlord_website) llParts.push(`<a class="contact-link" href="${p.landlord_website}" target="_blank">↗ Website</a>`);
+    tdLL.innerHTML = llParts.length ? `<div class="contact-stack">${llParts.join('')}</div>` : '<span style="color:var(--ink-3)">Not disclosed</span>';
+    tr.appendChild(tdLL);
+
+    // Broker
+    const tdBr = document.createElement('td');
+    const brParts = [];
+    if (p.broker_name) brParts.push(`<span class="contact-name">${p.broker_name}</span>`);
+    if (p.broker_company) brParts.push(`<span class="contact-co">${p.broker_company}</span>`);
+    if (p.broker_email) brParts.push(`<a class="contact-link" href="mailto:${p.broker_email}">✉ ${p.broker_email}</a>`);
+    if (p.broker_phone) brParts.push(`<a class="contact-link" href="tel:${p.broker_phone}">✆ ${p.broker_phone}</a>`);
+    tdBr.innerHTML = brParts.length ? `<div class="contact-stack">${brParts.join('')}</div>` : '<span style="color:var(--ink-3)">—</span>';
+    tr.appendChild(tdBr);
+
+    // Source
+    const tdSrc = document.createElement('td');
+    if (p.source_url) {
+      tdSrc.innerHTML = `<a class="source-chip" href="${p.source_url}" target="_blank">↗ ${p.source_name||'View listing'}</a>`;
+    } else if (p.source_name) {
+      tdSrc.innerHTML = `<span class="stat">${p.source_name}</span>`;
+    } else {
+      tdSrc.innerHTML = '<span style="color:var(--ink-3)">—</span>';
+    }
+    tr.appendChild(tdSrc);
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+  document.getElementById('resultsArea').innerHTML = '';
+  document.getElementById('resultsArea').appendChild(wrap);
+}
+
+function renderSummary(data) {
+  const byCountry = {};
+  data.forEach(p => { byCountry[p.country_code] = (byCountry[p.country_code]||0)+1; });
+  const chips = [
+    `<span class="chip total">${data.length} propert${data.length===1?'y':'ies'}</span>`,
+    ...Object.entries(byCountry).map(([c,n]) =>
+      `<span class="chip market">${FLAGS[c]||''} ${COUNTRY_NAMES[c]||c}: ${n}</span>`)
+  ].join('');
+
+  const row = document.getElementById('summaryRow');
+  row.innerHTML = chips;
+  row.style.display = 'flex';
+}
+</script>
+</body>
+</html>
