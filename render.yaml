@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: hotel-mirror
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # you paste the value manually in the Render dashboard
