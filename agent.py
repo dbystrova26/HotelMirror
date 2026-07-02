@@ -56,15 +56,35 @@ BROKERS = (
     "Idealista, Immobiliare.it"
 )
 
-SYSTEM_PROMPT = f"""You are a specialist real estate researcher for European serviced apartment operators
-(Bob W, Zoku, Wilde Aparthotels, Edyn, Numa, Sonder).
+SYSTEM_PROMPT = f"""You are a real estate researcher finding ACTIVE, VERIFIABLE listings of hotels
+and buildings available for LEASE (not purchase) to operators across Europe.
+Client: serviced apartment operators like Bob W, Numa, Zoku, limehome — they lease, never buy.
 
-Your task: find hotels, apart-hotels, and large buildings available for LONG-TERM LEASE
-(master lease or management contract). The operator NEVER buys — lease only.
+CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE terms:
+- Germany/Austria/Switzerland: "Hotel pachten", "Hotel zu verpachten", "Hotelpacht",
+  "Boardinghouse pachten" — immobilienscout24.de (Gewerbe), immowelt.de, hotel-boerse.com
+- France: "hotel a louer", "location-gerance hotel", "murs et fonds hotel",
+  "fonds de commerce hotel" — SeLoger Bureaux & Commerces, CessionPME, leboncoin pro
+- Italy: "hotel in affitto", "albergo in gestione" — immobiliare.it, idealista.it
+- Spain/Portugal: "hotel en alquiler", "traspaso hotel", "hotel para arrendar" — idealista, fotocasa
+- Netherlands/Belgium: "hotel te huur", "hotel ter overname" — funda in business, horecamakelaardij.nl
+- UK/Ireland: "hotel to lease", "leasehold hotel for sale", "hotel to let" — christie.com,
+  daltonsbusiness.com, rightmove commercial, businessesforsale.com
+- Czech/Poland/Greece: "hotel k pronajmu", "hotel do wynajecia" — sreality.cz, otodom.pl, spitogatos.gr
 
-Search these broker portals and property sites: {BROKERS}
+ALSO INCLUDE:
+- Leasehold hotel businesses for sale (the lease itself is being sold)
+- Location-gerance and Pacht offers (both are lease structures)
+- Operator/tenant searches announced by landlords or brokers in hospitality news
+- New developments seeking operators (forward lease deals)
 
-Return ONLY a valid JSON array — no markdown fences, no preamble, no explanation.
+VALIDATION RULES:
+- Every result MUST come from an actual search result — include its real source_url
+- Never invent listings, contacts, or URLs. Use null for unknown fields — partial data is fine
+- Prefer listings published or updated 2024-2026
+- Contact details only if actually shown in the listing
+
+Return ONLY a valid JSON array — no markdown fences, no preamble.
 Each object must have exactly these keys (use null if unknown):
 
 {{
@@ -96,61 +116,102 @@ Each object must have exactly these keys (use null if unknown):
 """
 
 # ─────────────────────────────────────────────
-# ANTHROPIC CLIENT
+# API CLIENTS — Anthropic primary, OpenAI fallback
 # ─────────────────────────────────────────────
 
-_api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-if not _api_key:
+_anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+_openai_key = os.environ.get("OPENAI_API_KEY", "")
+
+if not _anthropic_key and not _openai_key:
     raise SystemExit(
-        "\n  ✗  ANTHROPIC_API_KEY not set.\n\n"
-        "  Set it in your shell:\n"
-        "    export ANTHROPIC_API_KEY=sk-ant-...\n\n"
-        "  Or create a .env file:\n"
-        "    cp .env.example .env   # then add your key\n\n"
-        "  Get a key at: https://console.anthropic.com → API Keys\n"
+        "\n  ✗  No API key set.\n\n"
+        "  Set at least one in your shell or .env file:\n"
+        "    ANTHROPIC_API_KEY=sk-ant-...   (primary)\n"
+        "    OPENAI_API_KEY=sk-...          (fallback)\n\n"
+        "  Get keys at: https://console.anthropic.com / https://platform.openai.com\n"
     )
 
-client = anthropic.Anthropic(api_key=_api_key)
+client = anthropic.Anthropic(api_key=_anthropic_key) if _anthropic_key else None
+
+
+def _search_openai(user_message: str) -> str:
+    """Fallback: OpenAI Responses API with built-in web_search tool."""
+    import urllib.request
+
+    body = json.dumps({
+        "model": "gpt-4.1",
+        "tools": [{"type": "web_search"}],
+        "instructions": SYSTEM_PROMPT,
+        "input": user_message,
+        "max_output_tokens": 8000,
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/responses",
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {_openai_key}",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        data = json.loads(resp.read())
+
+    text = ""
+    for item in data.get("output", []):
+        if item.get("type") == "message":
+            for c in item.get("content", []):
+                if c.get("type") == "output_text":
+                    text += c.get("text", "")
+    return text
 
 # ─────────────────────────────────────────────
 # AGENTIC SEARCH LOOP
 # ─────────────────────────────────────────────
 
-def search(user_message: str, max_iterations: int = 8) -> str:
+def search(user_message: str, max_iterations: int = 12) -> str:
     """
-    Multi-turn agentic loop with web_search tool.
-    Runs until stop_reason == end_turn or max iterations reached.
+    Anthropic primary, OpenAI fallback (no credit, auth error, outage).
+    web_search_20250305 is a SERVER-SIDE tool: Anthropic executes searches itself
+    and returns results inline. Long turns pause with stop_reason 'pause_turn';
+    we resume by appending the assistant content and re-calling.
     """
+    if client is None:
+        print("  ⚠  No Anthropic key — using OpenAI directly.")
+        return _search_openai(user_message)
+
+    try:
+        return _search_anthropic(user_message, max_iterations)
+    except Exception as exc:
+        if not _openai_key:
+            raise
+        print(f"  ⚠  Anthropic failed ({exc}). Falling back to OpenAI…")
+        return _search_openai(user_message)
+
+
+def _search_anthropic(user_message: str, max_iterations: int = 12) -> str:
     messages = [{"role": "user", "content": user_message}]
-    tools = [{"type": "web_search_20250305", "name": "web_search"}]
+    tools = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 10}]
 
     for i in range(max_iterations):
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=5000,
+            max_tokens=8000,
             system=SYSTEM_PROMPT,
             tools=tools,
             messages=messages,
         )
 
-        if response.stop_reason == "end_turn":
-            return "".join(
-                b.text for b in response.content if b.type == "text"
-            )
-
-        if response.stop_reason == "tool_use":
+        # Server-side search paused mid-turn — resume with full content
+        if response.stop_reason == "pause_turn":
             messages.append({"role": "assistant", "content": response.content})
-            messages.append({
-                "role": "user",
-                "content": [
-                    {"type": "tool_result", "tool_use_id": b.id, "content": ""}
-                    for b in response.content if b.type == "tool_use"
-                ],
-            })
+            print(f"  …  search round {i + 1}")
             continue
 
-        # Unexpected stop — return whatever text we have
-        return "".join(b.text for b in response.content if hasattr(b, "text"))
+        # Done (end_turn, max_tokens, etc.) — extract all text blocks
+        return "".join(
+            b.text for b in response.content if b.type == "text"
+        )
 
     return ""
 
@@ -277,11 +338,13 @@ def run(
     if notes:         filters.append(notes)
 
     query = (
-        f"Find hotels and buildings available for long-term lease "
-        f"(master lease or management contract) for serviced apartment operators in: {country_str}. "
+        f"Find hotels and buildings currently available for lease to operators in: {country_str}. "
         + (f"Filters: {'; '.join(filters)}. " if filters else "")
-        + f"Search all major broker portals and property sites. "
-        f"Return up to {max_results} results as a JSON array with full landlord and broker contact details."
+        + "Search the web NOW using local-language lease terms for each country "
+        "(e.g. 'Hotel zu verpachten' for Germany, 'hotel location-gerance' for France, "
+        "'hotel in affitto' for Italy). Run multiple searches across property portals, "
+        "business-transfer sites, and hospitality news. Include leasehold sales and "
+        f"Pacht/location-gerance offers. Return up to {max_results} real, sourced results as a JSON array."
     )
 
     print("  🔍  Searching the web…")
