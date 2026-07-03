@@ -788,29 +788,7 @@ function parseJSON(raw) {
   }
 }
 
-async function runSearch() {
-  if (busy) return;
-  busy = true;
-  document.getElementById('searchBtn').disabled = true;
-  document.getElementById('resultsArea').innerHTML = '';
-  document.getElementById('summaryRow').style.display = 'none';
-  allData = [];
-
-  const selCodes = active.size > 0 ? [...active] : ALL_CODES;
-  const countries = selCodes.map(c => COUNTRY_NAMES[c]).join(', ');
-  // City-restricted market spec, e.g. "Germany (Berlin, Munich, ...)"
-  const targetMarkets = selCodes
-    .map(c => `${COUNTRY_NAMES[c]} (${TARGET_CITIES[c].join(', ')})`)
-    .join('; ');
-
-  const propType  = document.getElementById('propType').value;
-  const city      = document.getElementById('city').value;
-  const minUnits  = document.getElementById('minUnits').value;
-  const notes     = document.getElementById('notes').value;
-
-  setStatus(`Scanning ${countries}…`, true);
-
-  const system = `You are a real estate researcher finding ACTIVE, VERIFIABLE listings of hotels and buildings available for LEASE (not purchase) to operators across Europe. Client: a serviced apartment / extended-stay operator that leases, never buys.
+const SYSTEM_PROMPT = `You are a real estate researcher finding ACTIVE, VERIFIABLE listings of hotels and buildings available for LEASE (not purchase) to operators across Europe. Client: a serviced apartment / extended-stay operator that leases, never buys.
 
 CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE terms. Search in the local language of each target country:
 - Germany/Austria/Switzerland: "Hotel pachten", "Hotel zu verpachten", "Hotelpacht", "Boardinghouse pachten" — on immobilienscout24.de (Gewerbe section), immowelt.de, hotel-boerse.com, nestoria
@@ -819,7 +797,9 @@ CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE te
 - Spain/Portugal: "hotel en alquiler", "traspaso hotel", "hotel para arrendar" — idealista.com, fotocasa, milanuncios
 - Netherlands/Belgium: "hotel te huur", "hotel ter overname", "horecapand te huur" — funda in business, horecamakelaardij.nl
 - UK/Ireland: "hotel to lease", "leasehold hotel for sale", "hotel to let" — christie.com, daltonsbusiness.com, rightmove commercial, businessesforsale.com
-- Czech/Poland/Greece: "hotel k pronájmu", "hotel do wynajęcia", "ξενοδοχείο προς ενοικίαση" — sreality.cz, otodom.pl, spitogatos.gr
+- Czech/Poland/Hungary: "hotel k pronájmu", "hotel do wynajęcia", "szálloda kiadó / bérbeadó" — sreality.cz, otodom.pl, ingatlan.com
+- Nordics: "hotell uthyres" (SE), "hotel til leje" (DK), "hotelli vuokrattavana" (FI), "hotell til leie" (NO) — blocket.se, boliga.dk, oikotie.fi, finn.no
+- UAE/Israel: "hotel for lease Dubai", "מלון להשכרה" — bayut.com, dubizzle, yad2.co.il
 
 ALSO INCLUDE:
 - Leasehold hotel businesses for sale (leasehold = the lease is what's being sold)
@@ -867,39 +847,71 @@ Return ONLY a valid JSON array. No markdown fences, no preamble. Return ALL vali
   "notes": string
 }`;
 
+async function runSearch() {
+  if (busy) return;
+  busy = true;
+  document.getElementById('searchBtn').disabled = true;
+  document.getElementById('resultsArea').innerHTML = '';
+  document.getElementById('summaryRow').style.display = 'none';
+  allData = [];
+
+  const selCodes = active.size > 0 ? [...active] : ALL_CODES;
+  const propType  = document.getElementById('propType').value;
+  const city      = document.getElementById('city').value;
+  const minUnits  = document.getElementById('minUnits').value;
+  const notes     = document.getElementById('notes').value;
+
   const filters = [
     propType && `Type: ${propType}`,
     city && `City: ${city}`,
-    minUnits && `Min. units: ${minUnits}`,
+    minUnits && `Min. units: ${minUnits} (if room count is not stated in a listing, still include it with rooms=null rather than excluding it)`,
     notes
   ].filter(Boolean).join('; ');
 
-  const userMsg = `Find hotels and buildings currently available for lease to operators in these target markets: ${targetMarkets}.${filters ? ' Filters: ' + filters + '.' : ''} Run at least 6 city-specific web searches NOW using local-language lease terms (e.g. "Hotel zu verpachten München", "hotel in affitto Milano", "traspaso hotel Madrid", "hôtel location-gérance Paris"). Prioritise depth in the markets with most public supply among my selection. Include Pacht, location-gérance, affitto di ramo d'azienda, leasehold sales, and operator searches. Return ALL validated results you find (up to 100) as a JSON array — never an empty array if you found qualifying listings.`;
+  // Split selected countries into chunks of 3 — depth over breadth.
+  const CHUNK = 3;
+  const chunks = [];
+  for (let i = 0; i < selCodes.length; i += CHUNK) chunks.push(selCodes.slice(i, i + CHUNK));
 
-  try {
-    const raw = await callAI([{ role:'user', content: userMsg }], system, userMsg);
-    const data = parseJSON(raw);
+  const seen = new Set();
+  let failures = [];
 
-    if (!data || !data.length) {
-      setStatus('');
-      document.getElementById('resultsArea').innerHTML = `
-        <div class="empty">
-          <div class="empty-glyph">⌂</div>
-          <h2>No listings found</h2>
-          <p>Try broadening your search — fewer filters or more countries.</p>
-        </div>`;
-    } else {
-      allData = data;
-      setStatus(`${data.length} propert${data.length===1?'y':'ies'} found across ${countries}`);
-      renderTable(data);
-      renderSummary(data);
+  for (let ci = 0; ci < chunks.length; ci++) {
+    const codes = chunks[ci];
+    const names = codes.map(c => COUNTRY_NAMES[c]).join(', ');
+    const targetMarkets = codes
+      .map(c => `${COUNTRY_NAMES[c]} (${TARGET_CITIES[c].join(', ')})`)
+      .join('; ');
+
+    setStatus(`Searching ${names}… (${ci + 1}/${chunks.length} · ${allData.length} found so far)`, true);
+
+    const userMsg = `Find hotels and buildings currently available for lease to operators in these target markets: ${targetMarkets}.${filters ? ' Filters: ' + filters + '.' : ''} Run at least 4 city-specific web searches NOW using local-language lease terms for these countries. Include Pacht, location-gérance, affitto di ramo d'azienda, leasehold sales, and operator searches. Return ALL validated results you find (up to 40) as a JSON array — never an empty array if you found qualifying listings.`;
+
+    try {
+      const raw = await callAI([{ role:'user', content: userMsg }], SYSTEM_PROMPT, userMsg);
+      const batch = parseJSON(raw) || [];
+      for (const p of batch) {
+        const key = (p.source_url || '') + '|' + (p.property_name || '') + '|' + (p.city || '');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        allData.push(p);
+      }
+      // Progressive render after each chunk
+      if (allData.length) { renderTable(allData); renderSummary(allData); }
+    } catch(err) {
+      console.warn(`Chunk ${names} failed:`, err.message);
+      failures.push(names);
     }
-  } catch(err) {
+  }
+
+  if (!allData.length) {
     setStatus('');
-    document.getElementById('resultsArea').innerHTML = `
-      <div class="err-box">
-        <strong>Search failed</strong>${err.message}
-      </div>`;
+    document.getElementById('resultsArea').innerHTML = failures.length
+      ? `<div class="err-box"><strong>Search failed</strong>${failures.join('; ')} — see console (F12) for details</div>`
+      : `<div class="empty"><div class="empty-glyph">⌂</div><h2>No listings found</h2><p>These markets have thin public lease supply — try adding Germany, Italy, Spain or France, or remove the min-units filter.</p></div>`;
+  } else {
+    const note = failures.length ? ` · ${failures.length} market group(s) failed` : '';
+    setStatus(`${allData.length} propert${allData.length === 1 ? 'y' : 'ies'} found across ${selCodes.map(c=>COUNTRY_NAMES[c]).join(', ')}${note}`);
   }
 
   busy = false;
