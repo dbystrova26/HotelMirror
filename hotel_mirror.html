@@ -305,6 +305,15 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── Off-target badge ─────────────────────────────── */
+  .ot-badge {
+    display: inline-block; margin-left: 6px;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
+    background: var(--umber-pale); color: var(--umber);
+    border: 1px solid #D4B898; vertical-align: middle;
+  }
+
   /* ── Export button ────────────────────────────────── */
   .export-btn {
     display: inline-flex; align-items: center; gap: 6px;
@@ -821,12 +830,15 @@ ALSO INCLUDE:
 
 VALIDATION RULES:
 - Every result MUST come from an actual search result you found — include its real source_url
+- source_url must be the DIRECT listing page (an exposé/annuncio/inmueble URL). NEVER substitute a category, search-results, or portal-section URL — if you cannot cite the direct listing URL, set source_url to null and name the portal in source_name
+- EXCLUDE spaces located INSIDE hotels (bars, restaurants, retail units, casco plinth spaces, rooftop venues). Only whole hotels/buildings an operator could run qualify
+- Rent figures: state the period explicitly and copy it EXACTLY from the listing (per month vs per year are 12x apart — verify before writing)
 - Never invent listings, contacts, or URLs. Use null for any unknown field — partial data is fine and expected
 - Prefer listings published or updated 2024–2026
 - Landlord/broker contact details only if actually shown in the listing
 
 TARGET MARKET RULE:
-Include properties located in the target cities from the user message OR their metro areas (suburbs, adjacent municipalities count). If after thorough searching you have fewer than 5 in-target results, you may add strong listings from elsewhere in the SAME target countries — mark these with "notes": "outside target city list". NEVER return an empty array if you found any qualifying listings.
+Include properties located in the target cities from the user message OR their metro areas (suburbs, adjacent municipalities count). If after thorough searching you have fewer than 5 in-target results, you may add strong listings from elsewhere in the SAME target countries — the client will flag them automatically — do not add city-list labels to notes yourself. NEVER return an empty array if you found any qualifying listings.
 
 SEARCH PROCEDURE — depth over breadth:
 Run at least 6 distinct, CITY-SPECIFIC searches using local-language terms, prioritising markets with the most public lease supply (Germany, Italy, Spain, France, Netherlands) among the selected targets. Examples: "Hotel pachten Berlin", "Hotel zu verpachten München", "hotel in affitto Milano", "albergo in gestione Roma", "traspaso hotel Madrid", "hôtel location-gérance Paris", "hotel te huur Amsterdam". Do NOT run one generic Europe-wide search.
@@ -957,6 +969,16 @@ function sortData(key) {
   renderTable(sorted);
 }
 
+function isOffTarget(p) {
+  const targets = TARGET_CITIES[p.country_code] || [];
+  const c = (p.city || '').toLowerCase().trim();
+  if (!c) return false;
+  return !targets.some(t => {
+    const tl = t.toLowerCase();
+    return c.includes(tl) || tl.includes(c);
+  });
+}
+
 function renderTable(data) {
   const wrap = document.createElement('div');
   wrap.className = 'table-wrap';
@@ -989,10 +1011,17 @@ function renderTable(data) {
     tdName.innerHTML = `<span class="prop-name">${p.property_name||'—'}</span><span class="prop-type">${p.property_type||''}</span>`;
     tr.appendChild(tdName);
 
-    // City
+    // City (+ off-target flag)
     const tdCity = document.createElement('td');
     tdCity.className = 'muted';
     tdCity.textContent = p.city || '—';
+    if (isOffTarget(p)) {
+      const b = document.createElement('span');
+      b.className = 'ot-badge';
+      b.textContent = 'off-target';
+      b.title = 'Outside the target city list — same country fallback';
+      tdCity.appendChild(b);
+    }
     tr.appendChild(tdCity);
 
     // Country
@@ -1091,6 +1120,7 @@ function renderSummary(data) {
     `<span class="chip total">${data.length} propert${data.length===1?'y':'ies'}</span>`,
     ...Object.entries(byCountry).map(([c,n]) =>
       `<span class="chip market">${FLAGS[c]||''} ${COUNTRY_NAMES[c]||c}: ${n}</span>`),
+    (data.filter(isOffTarget).length ? `<span class="chip total" title="Same-country fallback results outside the target city list">⚑ ${data.filter(isOffTarget).length} off-target</span>` : ''),
     `<button class="export-btn" onclick="exportExcel()">⤓ Export to Excel</button>`
   ].join('');
 

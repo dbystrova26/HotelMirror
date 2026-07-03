@@ -105,16 +105,19 @@ ALSO INCLUDE:
 - New developments seeking operators (forward lease deals)
 
 VALIDATION RULES:
-- Every result MUST come from an actual search result — include its real source_url
-- Never invent listings, contacts, or URLs. Use null for unknown fields — partial data is fine
-- Prefer listings published or updated 2024-2026
-- Contact details only if actually shown in the listing
+- Every result MUST come from an actual search result you found — include its real source_url
+- source_url must be the DIRECT listing page (an exposé/annuncio/inmueble URL). NEVER substitute a category, search-results, or portal-section URL — if you cannot cite the direct listing URL, set source_url to null and name the portal in source_name
+- EXCLUDE spaces located INSIDE hotels (bars, restaurants, retail units, casco plinth spaces, rooftop venues). Only whole hotels/buildings an operator could run qualify
+- Rent figures: state the period explicitly and copy it EXACTLY from the listing (per month vs per year are 12x apart — verify before writing)
+- Never invent listings, contacts, or URLs. Use null for any unknown field — partial data is fine and expected
+- Prefer listings published or updated 2024–2026
+- Landlord/broker contact details only if actually shown in the listing
 
 TARGET MARKET RULE:
 Include properties located in the target cities from the user message OR their metro
 areas (suburbs and adjacent municipalities count). If after thorough searching you have
 fewer than 5 in-target results, you may add strong listings from elsewhere in the SAME
-target countries — mark these with "notes": "outside target city list".
+target countries — they will be flagged automatically downstream.
 NEVER return an empty array if you found any qualifying listings.
 
 SEARCH PROCEDURE — depth over breadth:
