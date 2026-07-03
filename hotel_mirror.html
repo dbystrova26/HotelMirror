@@ -834,6 +834,10 @@ VALIDATION RULES:
 - EXCLUDE spaces located INSIDE hotels (bars, restaurants, retail units, casco plinth spaces, rooftop venues). Only whole hotels/buildings an operator could run qualify
 - Rent figures: state the period explicitly and copy it EXACTLY from the listing (per month vs per year are 12x apart — verify before writing)
 - Never invent listings, contacts, or URLs. Use null for any unknown field — partial data is fine and expected
+- Each row must be ONE specific, individual property. NEVER create rows for portals, search/category pages, listing hubs, broker service pages, or "active mandates" pages — those are not listings. If you only found a portal, do not include it as a result
+- Never reuse the same source_url across multiple rows — if two rows share a URL, it is a category page and both rows are invalid
+- If your own research indicates a deal is closed, likely closed, or an operator has already been selected, EXCLUDE it — do not include it with a warning note
+- EXCLUDE listings already closed: skip anything marked rented/sold/let/under offer in ANY language — "verhuurd", "verkocht", "onder bod" (NL); "vermietet", "verpachtet", "verkauft" (DE); "loué", "vendu" (FR); "affittato", "venduto", "trattativa riservata conclusa" (IT); "alquilado", "traspasado", "vendido" (ES); "arrendado" (PT); "let", "sold", "under offer", "sale agreed" (EN); "wynajęte", "sprzedane" (PL); "pronajato", "prodáno" (CZ); "uthyrd", "såld" (SE); "udlejet", "solgt" (DK); "vuokrattu", "myyty" (FI); "utleid", "solgt" (NO). Broker sites keep closed deals online as references — check the listing status/title before including
 - Prefer listings published or updated 2024–2026
 - Landlord/broker contact details only if actually shown in the listing
 
