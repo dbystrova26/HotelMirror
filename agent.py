@@ -32,20 +32,46 @@ import anthropic
 # ─────────────────────────────────────────────
 
 COUNTRIES = {
-    "DE": "Germany",
-    "NL": "Netherlands",
-    "FR": "France",
-    "BE": "Belgium",
-    "LU": "Luxembourg",
-    "CH": "Switzerland",
-    "CZ": "Czech Republic",
-    "GB": "United Kingdom",
-    "IE": "Ireland",
-    "IT": "Italy",
-    "ES": "Spain",
-    "PT": "Portugal",
-    "GR": "Greece",
-    "PL": "Poland",
+    "AT": "Austria", "BE": "Belgium", "NL": "Netherlands", "LU": "Luxembourg",
+    "CZ": "Czech Republic", "HU": "Hungary", "PL": "Poland",
+    "FR": "France", "DE": "Germany",
+    "ES": "Spain", "PT": "Portugal", "IT": "Italy",
+    "AE": "UAE", "IL": "Israel",
+    "DK": "Denmark", "SE": "Sweden", "FI": "Finland", "NO": "Norway",
+    "CH": "Switzerland", "GB": "United Kingdom", "IE": "Ireland",
+}
+
+# Target markets — key expansion cities.
+# Searches are restricted to these target cities only.
+TARGET_CITIES = {
+    "AT": ["Graz", "Innsbruck", "Kitzbühel", "Salzburg", "Vienna"],
+    "BE": ["Antwerp", "Bruges", "Brussels", "Ghent"],
+    "NL": ["Amsterdam", "Groningen", "Haarlem", "Maastricht", "Rotterdam", "The Hague", "Utrecht"],
+    "LU": ["Luxembourg"],
+    "CZ": ["Prague"],
+    "HU": ["Budapest"],
+    "PL": ["Krakow", "Warsaw"],
+    "FR": ["Aix-en-Provence", "Bordeaux", "Cannes", "Lille", "Lyon", "Marseille",
+           "Montpellier", "Nantes", "Nice", "Paris", "Strasbourg", "Toulouse"],
+    "DE": ["Berlin", "Bonn", "Bremen", "Cologne", "Dresden", "Düsseldorf", "Frankfurt",
+           "Freiburg im Breisgau", "Hamburg", "Heidelberg", "Leipzig", "Munich",
+           "Nuremberg", "Stuttgart"],
+    "ES": ["Alicante", "Barcelona", "Bilbao", "Granada", "Las Palmas de Gran Canaria",
+           "Madrid", "Malaga", "Marbella", "Palma", "San Sebastian", "Sevilla", "Valencia"],
+    "PT": ["Funchal", "Lisbon", "Porto"],
+    "IT": ["Bologna", "Florence", "Genoa", "Milano", "Napoli", "Palermo", "Rome",
+           "Turin", "Venice", "Verona"],
+    "AE": ["Dubai"],
+    "IL": ["Tel Aviv"],
+    "DK": ["Copenhagen"],
+    "SE": ["Gothenburg", "Stockholm"],
+    "FI": ["Helsinki"],
+    "NO": ["Oslo"],
+    "CH": ["Basel", "Bern", "Geneva", "Lausanne", "Lugano", "Luzern", "Zurich"],
+    "GB": ["Bath", "Belfast", "Birmingham", "Brighton", "Bristol", "Cardiff",
+           "Edinburgh", "Glasgow", "Leeds", "Liverpool",
+           "London", "Manchester", "Newcastle", "Oxford", "York"],
+    "IE": ["Dublin"],
 }
 
 BROKERS = (
@@ -58,7 +84,7 @@ BROKERS = (
 
 SYSTEM_PROMPT = f"""You are a real estate researcher finding ACTIVE, VERIFIABLE listings of hotels
 and buildings available for LEASE (not purchase) to operators across Europe.
-Client: serviced apartment operators like Bob W, Numa, Zoku, limehome — they lease, never buy.
+Client: a serviced apartment / extended-stay operator that leases, never buys.
 
 CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE terms:
 - Germany/Austria/Switzerland: "Hotel pachten", "Hotel zu verpachten", "Hotelpacht",
@@ -84,14 +110,32 @@ VALIDATION RULES:
 - Prefer listings published or updated 2024-2026
 - Contact details only if actually shown in the listing
 
+TARGET MARKET RULE:
+Include properties located in the target cities from the user message OR their metro
+areas (suburbs and adjacent municipalities count). If after thorough searching you have
+fewer than 5 in-target results, you may add strong listings from elsewhere in the SAME
+target countries — mark these with "notes": "outside target city list".
+NEVER return an empty array if you found any qualifying listings.
+
+SEARCH PROCEDURE — depth over breadth:
+Run at least 6 distinct, CITY-SPECIFIC searches using local-language terms, prioritising
+markets with the most public lease supply (Germany, Italy, Spain, France, Netherlands)
+among the selected targets. Examples: "Hotel pachten Berlin", "Hotel zu verpachten
+Muenchen", "hotel in affitto Milano", "albergo in gestione Roma", "traspaso hotel Madrid",
+"hotel location-gerance Paris", "hotel te huur Amsterdam". Do NOT run one generic
+Europe-wide search.
+
 Return ONLY a valid JSON array — no markdown fences, no preamble.
+Return ALL validated listings you find — no minimum, up to 100 maximum.
+If output space runs low, STOP adding listings and close the JSON array properly —
+a complete array of 15 beats a truncated array of 40. Keep "notes" under 20 words.
 Each object must have exactly these keys (use null if unknown):
 
 {{
   "property_name":      string,
   "address":            string,
   "city":               string,
-  "country_code":       "DE"|"NL"|"FR"|"BE"|"LU"|"CH"|"CZ"|"GB"|"IE"|"IT"|"ES"|"PT"|"GR"|"PL",
+  "country_code":       "AT"|"BE"|"NL"|"LU"|"CZ"|"HU"|"PL"|"FR"|"DE"|"ES"|"PT"|"IT"|"AE"|"IL"|"DK"|"SE"|"FI"|"NO"|"CH"|"GB"|"IE",
   "property_type":      "Hotel"|"Apart-hotel"|"Office conversion"|"Residential building"|"Mixed-use",
   "rooms":              string,
   "sqm":                string,
@@ -143,7 +187,7 @@ def _search_openai(user_message: str) -> str:
         "tools": [{"type": "web_search"}],
         "instructions": SYSTEM_PROMPT,
         "input": user_message,
-        "max_output_tokens": 8000,
+        "max_output_tokens": 30000,
     }).encode()
 
     req = urllib.request.Request(
@@ -196,7 +240,7 @@ def _search_anthropic(user_message: str, max_iterations: int = 12) -> str:
     for i in range(max_iterations):
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=8000,
+            max_tokens=20000,
             system=SYSTEM_PROMPT,
             tools=tools,
             messages=messages,
@@ -223,13 +267,29 @@ def _search_anthropic(user_message: str, max_iterations: int = 12) -> str:
 def parse_listings(raw: str) -> list[dict]:
     raw = re.sub(r"```json\s*", "", raw)
     raw = re.sub(r"```\s*", "", raw).strip()
-    s, e = raw.find("["), raw.rfind("]")
-    if s == -1 or e == -1:
+    s = raw.find("[")
+    if s == -1:
+        return []
+
+    # Attempt 1: clean parse
+    e = raw.rfind("]")
+    if e > s:
+        try:
+            return json.loads(raw[s : e + 1])
+        except json.JSONDecodeError:
+            pass
+
+    # Attempt 2: repair truncated output — cut to last complete object, close array
+    body = raw[s:]
+    last_obj = body.rfind("}")
+    if last_obj == -1:
         return []
     try:
-        return json.loads(raw[s : e + 1])
+        recovered = json.loads(body[: last_obj + 1] + "]")
+        print(f"  ⚠  Recovered {len(recovered)} listings from truncated JSON")
+        return recovered
     except json.JSONDecodeError as err:
-        print(f"  ⚠  JSON parse error: {err}")
+        print(f"  ⚠  JSON parse error (repair failed): {err}")
         return []
 
 
@@ -313,7 +373,7 @@ def run(
     notes: str = "",
     slack_webhook: str = "",
     output_dir: str = ".",
-    max_results: int = 12,
+    max_results: int = 100,
 ) -> list[dict]:
 
     countries = countries or list(COUNTRIES.keys())
@@ -337,14 +397,20 @@ def run(
     if city:          filters.append(f"city or region: {city}")
     if notes:         filters.append(notes)
 
+    target_markets = "; ".join(
+        f"{COUNTRIES[c]} ({', '.join(TARGET_CITIES[c])})" for c in countries if c in COUNTRIES
+    )
     query = (
-        f"Find hotels and buildings currently available for lease to operators in: {country_str}. "
+        f"Find hotels and buildings currently available for lease to operators "
+        f"in these target markets: {target_markets}. "
         + (f"Filters: {'; '.join(filters)}. " if filters else "")
-        + "Search the web NOW using local-language lease terms for each country "
+        + "Search the web NOW using local-language lease terms per country "
         "(e.g. 'Hotel zu verpachten' for Germany, 'hotel location-gerance' for France, "
-        "'hotel in affitto' for Italy). Run multiple searches across property portals, "
-        "business-transfer sites, and hospitality news. Include leasehold sales and "
-        f"Pacht/location-gerance offers. Return up to {max_results} real, sourced results as a JSON array."
+        "'hotel in affitto' for Italy, 'hotel en alquiler' for Spain). Run multiple searches "
+        "across property portals, business-transfer sites, and hospitality news. Include "
+        "leasehold sales and Pacht/location-gerance offers. Run at least 6 city-specific "
+        "searches, depth over breadth. Return ALL validated results "
+        f"(up to {max_results}) as a JSON array — never empty if you found qualifying listings."
     )
 
     print("  🔍  Searching the web…")
@@ -414,7 +480,7 @@ Examples:
     parser.add_argument("--min-units", default=0,  type=int,          help="Minimum unit/room count")
     parser.add_argument("--city",      default="", metavar="CITY",    help="City or region focus")
     parser.add_argument("--notes",     default="", metavar="TEXT",    help="Additional search criteria")
-    parser.add_argument("--max",       default=12, type=int,          help="Max results (default 12)")
+    parser.add_argument("--max",       default=100, type=int,         help="Max results (default 100)")
     parser.add_argument("--slack",     default="", metavar="URL",     help="Slack webhook URL")
     parser.add_argument("--output",    default=".", metavar="DIR",    help="Output directory (default: .)")
 

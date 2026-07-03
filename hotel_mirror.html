@@ -9,14 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
   /* ─────────────────────────────────────────────────────
-     Hotel Mirror — Bob W design language
+     Hotel Mirror — design language
      Dark charcoal header · Warm sandy canvas · Cream card surfaces
   ───────────────────────────────────────────────────── */
   :root {
-    /* Canvas — warm sandy parchment, like Bob W's printed collateral */
+    /* Canvas — warm sandy parchment */
     --canvas:        #E8DFD0;
 
-    /* Header — Bob W dark nav, near-black charcoal */
+    /* Header — dark nav, near-black charcoal */
     --header-bg:     #1C1914;
     --header-border: #2E2A24;
     --header-text:   #F0EAE0;
@@ -38,7 +38,7 @@
     --ink-3:         #6A6258;   /* tertiary — warm medium gray */
     --ink-ghost:     #9A9088;   /* placeholder / hints */
 
-    /* Accent — Bob W forest olive, rich enough for cream bg */
+    /* Accent — forest olive, rich enough for cream bg */
     --olive:         #3E5C28;
     --olive-hover:   #4E7032;
     --olive-pale:    #E0EAD4;   /* pill active bg */
@@ -67,7 +67,7 @@
     min-height: 100vh;
   }
 
-  /* ── Header — dark Bob W style ─────────────────────── */
+  /* ── Header — dark editorial style ─────────────────── */
   .site-header {
     background: var(--header-bg);
     border-bottom: 1px solid var(--header-border);
@@ -580,7 +580,7 @@
   <div class="hero">
     <div class="hero-text">
       <h1>Find the right building.<br><em>Before someone else does.</em></h1>
-      <p>Hotels & buildings for long-term lease · DE · NL · FR · BE · LU · CH · CZ · GB · IE · IT · ES · PT · GR · PL</p>
+      <p>Hotels & buildings for long-term lease · 21 countries · 100+ target cities</p>
     </div>
     <div class="hero-tag">Master lease · Management contract<br>Operator never buys</div>
   </div>
@@ -637,19 +637,26 @@
       </div>
       <div class="countries" id="countries">
           <button class="c-pill on" data-code="DE"><span class="flag">🇩🇪</span>Germany</button>
+          <button class="c-pill on" data-code="AT"><span class="flag">🇦🇹</span>Austria</button>
+          <button class="c-pill on" data-code="CH"><span class="flag">🇨🇭</span>Switzerland</button>
           <button class="c-pill on" data-code="NL"><span class="flag">🇳🇱</span>Netherlands</button>
-          <button class="c-pill on" data-code="FR"><span class="flag">🇫🇷</span>France</button>
           <button class="c-pill on" data-code="BE"><span class="flag">🇧🇪</span>Belgium</button>
           <button class="c-pill on" data-code="LU"><span class="flag">🇱🇺</span>Luxembourg</button>
-          <button class="c-pill on" data-code="CH"><span class="flag">🇨🇭</span>Switzerland</button>
-          <button class="c-pill on" data-code="CZ"><span class="flag">🇨🇿</span>Czech Rep.</button>
+          <button class="c-pill on" data-code="FR"><span class="flag">🇫🇷</span>France</button>
           <button class="c-pill on" data-code="GB"><span class="flag">🇬🇧</span>United Kingdom</button>
           <button class="c-pill on" data-code="IE"><span class="flag">🇮🇪</span>Ireland</button>
           <button class="c-pill on" data-code="IT"><span class="flag">🇮🇹</span>Italy</button>
           <button class="c-pill on" data-code="ES"><span class="flag">🇪🇸</span>Spain</button>
           <button class="c-pill on" data-code="PT"><span class="flag">🇵🇹</span>Portugal</button>
-          <button class="c-pill on" data-code="GR"><span class="flag">🇬🇷</span>Greece</button>
+          <button class="c-pill on" data-code="CZ"><span class="flag">🇨🇿</span>Czech Rep.</button>
+          <button class="c-pill on" data-code="HU"><span class="flag">🇭🇺</span>Hungary</button>
           <button class="c-pill on" data-code="PL"><span class="flag">🇵🇱</span>Poland</button>
+          <button class="c-pill on" data-code="DK"><span class="flag">🇩🇰</span>Denmark</button>
+          <button class="c-pill on" data-code="SE"><span class="flag">🇸🇪</span>Sweden</button>
+          <button class="c-pill on" data-code="FI"><span class="flag">🇫🇮</span>Finland</button>
+          <button class="c-pill on" data-code="NO"><span class="flag">🇳🇴</span>Norway</button>
+          <button class="c-pill on" data-code="AE"><span class="flag">🇦🇪</span>UAE</button>
+          <button class="c-pill on" data-code="IL"><span class="flag">🇮🇱</span>Israel</button>
           <button class="c-ctrl" onclick="selAll()">All</button>
           <button class="c-ctrl" onclick="clrAll()">None</button>
         </div>
@@ -705,9 +712,34 @@
 </footer>
 
 <script>
-const COUNTRY_NAMES = {DE:'Germany',NL:'Netherlands',FR:'France',BE:'Belgium',LU:'Luxembourg',CH:'Switzerland',CZ:'Czech Republic',GB:'United Kingdom',IE:'Ireland',IT:'Italy',ES:'Spain',PT:'Portugal',GR:'Greece',PL:'Poland'};
-const FLAGS = {DE:'🇩🇪',NL:'🇳🇱',FR:'🇫🇷',BE:'🇧🇪',LU:'🇱🇺',CH:'🇨🇭',CZ:'🇨🇿',GB:'🇬🇧',IE:'🇮🇪',IT:'🇮🇹',ES:'🇪🇸',PT:'🇵🇹',GR:'🇬🇷',PL:'🇵🇱'};
-const ALL_CODES = ['DE','NL','FR','BE','LU','CH','CZ','GB','IE','IT','ES','PT','GR','PL'];
+// ── Target markets — key expansion cities ─────
+// Searches are restricted to these target cities only.
+const COUNTRY_NAMES = {AT:'Austria',BE:'Belgium',NL:'Netherlands',LU:'Luxembourg',CZ:'Czech Republic',HU:'Hungary',PL:'Poland',FR:'France',DE:'Germany',ES:'Spain',PT:'Portugal',IT:'Italy',AE:'UAE',IL:'Israel',DK:'Denmark',SE:'Sweden',FI:'Finland',NO:'Norway',CH:'Switzerland',GB:'United Kingdom',IE:'Ireland'};
+const FLAGS = {AT:'🇦🇹',BE:'🇧🇪',NL:'🇳🇱',LU:'🇱🇺',CZ:'🇨🇿',HU:'🇭🇺',PL:'🇵🇱',FR:'🇫🇷',DE:'🇩🇪',ES:'🇪🇸',PT:'🇵🇹',IT:'🇮🇹',AE:'🇦🇪',IL:'🇮🇱',DK:'🇩🇰',SE:'🇸🇪',FI:'🇫🇮',NO:'🇳🇴',CH:'🇨🇭',GB:'🇬🇧',IE:'🇮🇪'};
+const TARGET_CITIES = {
+  AT: ['Graz','Innsbruck','Kitzbühel','Salzburg','Vienna'],
+  BE: ['Antwerp','Bruges','Brussels','Ghent'],
+  NL: ['Amsterdam','Groningen','Haarlem','Maastricht','Rotterdam','The Hague','Utrecht'],
+  LU: ['Luxembourg'],
+  CZ: ['Prague'],
+  HU: ['Budapest'],
+  PL: ['Krakow','Warsaw'],
+  FR: ['Aix-en-Provence','Bordeaux','Cannes','Lille','Lyon','Marseille','Montpellier','Nantes','Nice','Paris','Strasbourg','Toulouse'],
+  DE: ['Berlin','Bonn','Bremen','Cologne','Dresden','Düsseldorf','Frankfurt','Freiburg im Breisgau','Hamburg','Heidelberg','Leipzig','Munich','Nuremberg','Stuttgart'],
+  ES: ['Alicante','Barcelona','Bilbao','Granada','Las Palmas de Gran Canaria','Madrid','Malaga','Marbella','Palma','San Sebastian','Sevilla','Valencia'],
+  PT: ['Funchal','Lisbon','Porto'],
+  IT: ['Bologna','Florence','Genoa','Milano','Napoli','Palermo','Rome','Turin','Venice','Verona'],
+  AE: ['Dubai'],
+  IL: ['Tel Aviv'],
+  DK: ['Copenhagen'],
+  SE: ['Gothenburg','Stockholm'],
+  FI: ['Helsinki'],
+  NO: ['Oslo'],
+  CH: ['Basel','Bern','Geneva','Lausanne','Lugano','Luzern','Zurich'],
+  GB: ['Bath','Belfast','Birmingham','Brighton','Bristol','Cardiff','Edinburgh','Glasgow','Leeds','Liverpool','London','Manchester','Newcastle','Oxford','York'],
+  IE: ['Dublin']
+};
+const ALL_CODES = Object.keys(COUNTRY_NAMES);
 let active = new Set(ALL_CODES);
 let busy = false;
 let allData = [];
@@ -757,7 +789,7 @@ async function callClaude(messages, system) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 8000,
+        max_tokens: 20000,
         system,
         tools,
         messages: msgs
@@ -794,7 +826,7 @@ async function callOpenAI(userMsg, system) {
       tools: [{ type: 'web_search' }],
       instructions: system,
       input: userMsg,
-      max_output_tokens: 8000
+      max_output_tokens: 30000
     })
   });
   const data = await res.json();
@@ -833,19 +865,32 @@ async function callAI(messages, system, userMsg) {
 }
 
 function parseJSON(raw) {
-  console.log('RAW RESPONSE:', raw.slice(0, 500));
+  console.log('RAW RESPONSE length:', raw.length, '| head:', raw.slice(0, 300));
   raw = raw.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
-  const s = raw.indexOf('['), e = raw.lastIndexOf(']');
-  if (s===-1||e===-1) {
-    console.log('No JSON array found in response');
-    return null;
+  const s = raw.indexOf('[');
+  if (s === -1) { console.log('No JSON array start found'); return null; }
+
+  // Attempt 1: clean parse between [ and last ]
+  const e = raw.lastIndexOf(']');
+  if (e > s) {
+    try {
+      const parsed = JSON.parse(raw.slice(s, e + 1));
+      console.log('Parsed listings:', parsed.length);
+      return parsed;
+    } catch(_) { /* fall through to repair */ }
   }
+
+  // Attempt 2: repair truncated output — cut back to the last complete object
+  let body = raw.slice(s);
+  const lastObjEnd = body.lastIndexOf('}');
+  if (lastObjEnd === -1) { console.log('No complete object found'); return null; }
+  body = body.slice(0, lastObjEnd + 1) + ']';
   try {
-    const parsed = JSON.parse(raw.slice(s,e+1));
-    console.log('Parsed listings:', parsed.length);
+    const parsed = JSON.parse(body);
+    console.log('Recovered', parsed.length, 'listings from truncated JSON');
     return parsed;
   } catch(err) {
-    console.log('JSON parse error:', err.message);
+    console.log('Repair failed:', err.message);
     return null;
   }
 }
@@ -858,9 +903,12 @@ async function runSearch() {
   document.getElementById('summaryRow').style.display = 'none';
   allData = [];
 
-  const countries = active.size > 0
-    ? [...active].map(c=>COUNTRY_NAMES[c]).join(', ')
-    : ALL_CODES.map(c=>COUNTRY_NAMES[c]).join(', ');
+  const selCodes = active.size > 0 ? [...active] : ALL_CODES;
+  const countries = selCodes.map(c => COUNTRY_NAMES[c]).join(', ');
+  // City-restricted market spec, e.g. "Germany (Berlin, Munich, ...)"
+  const targetMarkets = selCodes
+    .map(c => `${COUNTRY_NAMES[c]} (${TARGET_CITIES[c].join(', ')})`)
+    .join('; ');
 
   const propType  = document.getElementById('propType').value;
   const city      = document.getElementById('city').value;
@@ -869,7 +917,7 @@ async function runSearch() {
 
   setStatus(`Scanning ${countries}…`, true);
 
-  const system = `You are a real estate researcher finding ACTIVE, VERIFIABLE listings of hotels and buildings available for LEASE (not purchase) to operators across Europe. Client: serviced apartment operators like Bob W, Numa, Zoku, limehome — they lease, never buy.
+  const system = `You are a real estate researcher finding ACTIVE, VERIFIABLE listings of hotels and buildings available for LEASE (not purchase) to operators across Europe. Client: a serviced apartment / extended-stay operator that leases, never buys.
 
 CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE terms. Search in the local language of each target country:
 - Germany/Austria/Switzerland: "Hotel pachten", "Hotel zu verpachten", "Hotelpacht", "Boardinghouse pachten" — on immobilienscout24.de (Gewerbe section), immowelt.de, hotel-boerse.com, nestoria
@@ -892,12 +940,18 @@ VALIDATION RULES:
 - Prefer listings published or updated 2024–2026
 - Landlord/broker contact details only if actually shown in the listing
 
-Return ONLY a valid JSON array. No markdown fences, no preamble. Up to 12 results. Each object with exactly these keys (null if unknown):
+TARGET MARKET RULE:
+Include properties located in the target cities from the user message OR their metro areas (suburbs, adjacent municipalities count). If after thorough searching you have fewer than 5 in-target results, you may add strong listings from elsewhere in the SAME target countries — mark these with "notes": "outside target city list". NEVER return an empty array if you found any qualifying listings.
+
+SEARCH PROCEDURE — depth over breadth:
+Run at least 6 distinct, CITY-SPECIFIC searches using local-language terms, prioritising markets with the most public lease supply (Germany, Italy, Spain, France, Netherlands) among the selected targets. Examples: "Hotel pachten Berlin", "Hotel zu verpachten München", "hotel in affitto Milano", "albergo in gestione Roma", "traspaso hotel Madrid", "hôtel location-gérance Paris", "hotel te huur Amsterdam". Do NOT run one generic Europe-wide search.
+
+Return ONLY a valid JSON array. No markdown fences, no preamble. Return ALL validated listings you find — no minimum, up to 100 maximum. If output space runs low, STOP adding listings and close the JSON array properly — a complete array of 15 beats a truncated array of 40. Keep "notes" under 20 words. Each object with exactly these keys (null if unknown):
 {
   "property_name": string,
   "address": string,
   "city": string,
-  "country_code": "DE"|"NL"|"FR"|"BE"|"LU"|"CH"|"CZ"|"GB"|"IE"|"IT"|"ES"|"PT"|"GR"|"PL",
+  "country_code": "AT"|"BE"|"NL"|"LU"|"CZ"|"HU"|"PL"|"FR"|"DE"|"ES"|"PT"|"IT"|"AE"|"IL"|"DK"|"SE"|"FI"|"NO"|"CH"|"GB"|"IE",
   "property_type": "Hotel"|"Apart-hotel"|"Office conversion"|"Residential building"|"Mixed-use",
   "rooms": string,
   "sqm": string,
@@ -927,7 +981,7 @@ Return ONLY a valid JSON array. No markdown fences, no preamble. Up to 12 result
     notes
   ].filter(Boolean).join('; ');
 
-  const userMsg = `Find hotels and buildings currently available for lease to operators in: ${countries}.${filters ? ' Filters: ' + filters + '.' : ''} Search the web NOW using local-language lease terms for each country (e.g. "Hotel zu verpachten" for Germany, "hôtel location-gérance" for France, "hotel in affitto" for Italy). Run multiple searches across property portals, business-transfer sites, and hospitality news. Include leasehold sales and Pacht/location-gérance offers. Return up to 12 real, sourced results as a JSON array.`;
+  const userMsg = `Find hotels and buildings currently available for lease to operators in these target markets: ${targetMarkets}.${filters ? ' Filters: ' + filters + '.' : ''} Run at least 6 city-specific web searches NOW using local-language lease terms (e.g. "Hotel zu verpachten München", "hotel in affitto Milano", "traspaso hotel Madrid", "hôtel location-gérance Paris"). Prioritise depth in the markets with most public supply among my selection. Include Pacht, location-gérance, affitto di ramo d'azienda, leasehold sales, and operator searches. Return ALL validated results you find (up to 100) as a JSON array — never an empty array if you found qualifying listings.`;
 
   try {
     const raw = await callAI([{ role:'user', content: userMsg }], system, userMsg);

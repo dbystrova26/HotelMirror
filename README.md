@@ -1,8 +1,8 @@
 # 🏨 Hotel Mirror — Lease Intelligence Agent
 
-AI agent that finds hotels and buildings available for **long-term lease** across Numa Group's target markets — 21 countries, ~110 cities. Landlord and broker contacts in one sortable table.
+AI agent that finds hotels and buildings available for **long-term lease** across 21 countries and ~110 target cities. Landlord and broker contacts in one sortable table.
 
-Built for operators that **lease, never buy** (Bob W / Numa / Zoku / limehome model).
+Built for serviced-apartment and extended-stay operators that **lease, never buy**.
 
 ---
 
@@ -23,7 +23,7 @@ Web search (local-language terms)  →  Validate & filter to target cities  → 
 
 ## Target markets
 
-Restricted to the Numa Group Expansion Focus (Nov 2023). Listings outside these cities are discarded.
+Searches are restricted to these target cities; listings outside them are flagged or discarded.
 
 | Region | Cities |
 |---|---|
