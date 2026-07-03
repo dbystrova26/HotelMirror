@@ -6,6 +6,7 @@
 <title>Hotel Mirror</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
   /* ─────────────────────────────────────────────────────
@@ -303,6 +304,17 @@
     flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Export button ────────────────────────────────── */
+  .export-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; color: var(--ink);
+    border: 1.5px solid var(--ink); border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    letter-spacing: 0.04em; padding: 5px 14px; cursor: pointer;
+    transition: background 0.12s, color 0.12s; margin-left: auto;
+  }
+  .export-btn:hover { background: var(--ink); color: var(--canvas); }
 
   /* ── Summary chips ────────────────────────────────── */
   .summary-row {
@@ -1078,12 +1090,49 @@ function renderSummary(data) {
   const chips = [
     `<span class="chip total">${data.length} propert${data.length===1?'y':'ies'}</span>`,
     ...Object.entries(byCountry).map(([c,n]) =>
-      `<span class="chip market">${FLAGS[c]||''} ${COUNTRY_NAMES[c]||c}: ${n}</span>`)
+      `<span class="chip market">${FLAGS[c]||''} ${COUNTRY_NAMES[c]||c}: ${n}</span>`),
+    `<button class="export-btn" onclick="exportExcel()">⤓ Export to Excel</button>`
   ].join('');
 
   const row = document.getElementById('summaryRow');
   row.innerHTML = chips;
   row.style.display = 'flex';
+}
+
+// ── Export current results to .xlsx ──────────────────────
+const EXPORT_COLS = [
+  ['property_name','Property'], ['property_type','Type'], ['city','City'],
+  ['country_code','Country'], ['address','Address'], ['rooms','Rooms'],
+  ['sqm','SQM'], ['floors','Floors'], ['year_built','Year built'],
+  ['lease_term','Lease term'], ['asking_rent','Asking rent'],
+  ['available_from','Available from'],
+  ['landlord_name','Landlord'], ['landlord_company','Landlord company'],
+  ['landlord_email','Landlord email'], ['landlord_phone','Landlord phone'],
+  ['landlord_website','Landlord website'],
+  ['broker_name','Broker'], ['broker_company','Broker company'],
+  ['broker_email','Broker email'], ['broker_phone','Broker phone'],
+  ['source_name','Source'], ['source_url','Source URL'], ['notes','Notes']
+];
+
+function exportExcel() {
+  if (!allData.length) return;
+  const rows = allData.map(p => {
+    const r = {};
+    for (const [key, label] of EXPORT_COLS) {
+      r[label] = key === 'country_code' ? (COUNTRY_NAMES[p[key]] || p[key] || '') : (p[key] ?? '');
+    }
+    return r;
+  });
+  const ws = XLSX.utils.json_to_sheet(rows, { header: EXPORT_COLS.map(c => c[1]) });
+  // Column widths from content
+  ws['!cols'] = EXPORT_COLS.map(([key, label]) => ({
+    wch: Math.min(50, Math.max(label.length, ...rows.map(r => String(r[label] || '').length)) + 2)
+  }));
+  ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s:{r:0,c:0}, e:{r:rows.length, c:EXPORT_COLS.length-1} }) };
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Listings');
+  const ts = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `hotel_mirror_${ts}.xlsx`);
 }
 </script>
 </body>

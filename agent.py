@@ -331,6 +331,38 @@ def save_csv(listings: list[dict], path: str):
     print(f"  💾  CSV   →  {path}")
 
 
+
+def save_xlsx(listings: list[dict], path: str):
+    if not listings:
+        return
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment
+    except ImportError:
+        print("  ⚠  openpyxl not installed — skipping .xlsx (pip install openpyxl)")
+        return
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Listings"
+    headers = [f.replace("_", " ").title() for f in FIELD_ORDER]
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(name="Arial", bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", start_color="1C1914")
+        cell.alignment = Alignment(vertical="center")
+    for l in listings:
+        ws.append([l.get(f) for f in FIELD_ORDER])
+    for col_idx, f in enumerate(FIELD_ORDER, 1):
+        width = max(len(headers[col_idx - 1]),
+                    *(len(str(l.get(f) or "")) for l in listings))
+        ws.column_dimensions[ws.cell(row=1, column=col_idx).column_letter].width = min(50, width + 2)
+    ws.auto_filter.ref = ws.dimensions
+    ws.freeze_panes = "A2"
+    wb.save(path)
+    print(f"  💾  XLSX  →  {path}")
+
+
 # ─────────────────────────────────────────────
 # OPTIONAL: SLACK ALERT
 # ─────────────────────────────────────────────
@@ -449,6 +481,7 @@ def run(
     print()
     save_json(listings, f"{output_dir}/hotel_mirror_{ts}.json")
     save_csv(listings,  f"{output_dir}/hotel_mirror_{ts}.csv")
+    save_xlsx(listings, f"{output_dir}/hotel_mirror_{ts}.xlsx")
     print()
     print("  ✅  Done.\n")
 
