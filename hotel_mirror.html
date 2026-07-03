@@ -813,7 +813,7 @@ const SYSTEM_PROMPT = `You are a real estate researcher finding ACTIVE, VERIFIAB
 
 CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE terms. Search in the local language of each target country:
 - Germany/Austria/Switzerland: "Hotel pachten", "Hotel zu verpachten", "Hotelpacht", "Boardinghouse pachten" — on immobilienscout24.de (Gewerbe section), immowelt.de, hotel-boerse.com, nestoria
-- France: "hôtel à louer", "location-gérance hôtel", "murs et fonds hôtel", "fonds de commerce hôtel" — SeLoger Bureaux & Commerces, CessionPME, leboncoin immobilier professionnel
+- France — IMPORTANT: French hotels are almost never listed as plain rentals. The lease market runs on "fonds de commerce" sales: the buyer acquires the business + the lease (droit au bail, bail commercial 3/6/9); the walls stay with the landlord and rent is paid. INCLUDE fonds-de-commerce hotel listings — put the fonds price in notes and the loyer (rent) in asking_rent when stated. Search: "fonds de commerce hôtel à vendre [city]", "cession hôtel", "droit au bail hôtel", "location-gérance hôtel" — on leboncoin.fr (bureaux_commerces/hôtel category), lhotellerie-restauration.fr (vente-fonds-commerce section), huchet-demorge.fr (Paris hotel specialist), pic-inter.com, hotels-a-vendre.com, cessionpme.com, michelsimond.fr
 - Italy: "hotel in affitto", "albergo in gestione", "hotel in locazione" — immobiliare.it, idealista.it, aste e gestioni
 - Spain/Portugal: "hotel en alquiler", "traspaso hotel", "hotel para arrendar" — idealista.com, fotocasa, milanuncios
 - Netherlands/Belgium: "hotel te huur", "hotel ter overname", "horecapand te huur" — funda in business, horecamakelaardij.nl
@@ -917,7 +917,10 @@ async function runSearch() {
 
     try {
       const raw = await callAI([{ role:'user', content: userMsg }], SYSTEM_PROMPT, userMsg);
-      const batch = parseJSON(raw) || [];
+      const rawBatch = parseJSON(raw) || [];
+      const batch = rawBatch.filter(p => !isPortalRow(p));
+      const dropped = rawBatch.length - batch.length;
+      if (dropped) console.log(`Filtered ${dropped} portal/mandate row(s)`);
       for (const p of batch) {
         const key = (p.source_url || '') + '|' + (p.property_name || '') + '|' + (p.city || '');
         if (seen.has(key)) continue;
@@ -971,6 +974,19 @@ function sortData(key) {
     return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
   });
   renderTable(sorted);
+}
+
+
+// ── Deterministic portal/mandate-row filter ───────────────
+// The model sometimes returns broker "active mandates" pages or portals
+// as rows despite prompt rules. Enforce exclusion in code.
+const PORTAL_RX = /active mandates|mandates|portal|marketplace|aggregator|search page|suchprofil|listings? hub|pachtangebote|angebote \(|hotel-?angebote/i;
+function isPortalRow(p) {
+  const hay = `${p.property_name || ''} ${p.notes || ''}`;
+  if (PORTAL_RX.test(hay)) return true;
+  // No property-specific data at all → not a listing
+  const specific = (p.city || p.address || p.rooms || p.sqm);
+  return !specific;
 }
 
 function isOffTarget(p) {

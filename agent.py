@@ -89,8 +89,14 @@ Client: a serviced apartment / extended-stay operator that leases, never buys.
 CRITICAL SEARCH STRATEGY — public lease listings exist under LOCAL-LANGUAGE terms:
 - Germany/Austria/Switzerland: "Hotel pachten", "Hotel zu verpachten", "Hotelpacht",
   "Boardinghouse pachten" — immobilienscout24.de (Gewerbe), immowelt.de, hotel-boerse.com
-- France: "hotel a louer", "location-gerance hotel", "murs et fonds hotel",
-  "fonds de commerce hotel" — SeLoger Bureaux & Commerces, CessionPME, leboncoin pro
+- France — IMPORTANT: French hotels are almost never plain rentals. The lease market
+  runs on "fonds de commerce" sales: buyer acquires the business + the lease (droit au
+  bail, bail commercial 3/6/9); walls stay with the landlord, rent is paid. INCLUDE
+  fonds-de-commerce hotel listings — fonds price in notes, loyer in asking_rent.
+  Search: "fonds de commerce hotel a vendre [city]", "cession hotel", "droit au bail
+  hotel", "location-gerance hotel" — on leboncoin.fr (bureaux_commerces/hotel),
+  lhotellerie-restauration.fr (vente-fonds-commerce), huchet-demorge.fr (Paris
+  specialist), pic-inter.com, hotels-a-vendre.com, cessionpme.com, michelsimond.fr
 - Italy: "hotel in affitto", "albergo in gestione" — immobiliare.it, idealista.it
 - Spain/Portugal: "hotel en alquiler", "traspaso hotel", "hotel para arrendar" — idealista, fotocasa
 - Netherlands/Belgium: "hotel te huur", "hotel ter overname" — funda in business, horecamakelaardij.nl
@@ -270,6 +276,19 @@ def _search_anthropic(user_message: str, max_iterations: int = 12) -> str:
 # ─────────────────────────────────────────────
 # PARSE JSON FROM RESPONSE
 # ─────────────────────────────────────────────
+
+
+PORTAL_RX = re.compile(
+    r"active mandates|mandates|portal|marketplace|aggregator|search page|"
+    r"suchprofil|listings? hub|pachtangebote|hotel-?angebote", re.I)
+
+def is_portal_row(l: dict) -> bool:
+    """Broker service/portal pages returned as rows — enforce exclusion in code."""
+    hay = f"{l.get('property_name') or ''} {l.get('notes') or ''}"
+    if PORTAL_RX.search(hay):
+        return True
+    return not (l.get("city") or l.get("address") or l.get("rooms") or l.get("sqm"))
+
 
 def parse_listings(raw: str) -> list[dict]:
     raw = re.sub(r"```json\s*", "", raw)
@@ -456,6 +475,10 @@ def run(
     raw = search(query)
 
     listings = parse_listings(raw)
+    kept = [l for l in listings if not is_portal_row(l)]
+    if len(kept) < len(listings):
+        print(f"  ⚠  Filtered {len(listings) - len(kept)} portal/mandate row(s)")
+    listings = kept
     if not listings:
         print("  ⚠  No listings found. Try broader criteria.")
         return []
