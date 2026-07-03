@@ -122,7 +122,7 @@ Each run exports timestamped `hotel_mirror_YYYYMMDD_HHMMSS.json` + `.csv` — re
 - `web_search_20250305` is a **server-side** Anthropic tool — the API runs searches itself. Long turns pause with `stop_reason: "pause_turn"`; the loop resumes by re-sending the assistant content until `end_turn`
 - OpenAI fallback uses the **Responses API** with the built-in `web_search` tool
 - `max_tokens: 16000` on both providers so large result sets don't truncate mid-JSON
-- Off-market reality: institutional hotel-lease deals (Christie & Co, JLL, CBRE…) are not published — the broker quick-links bar in the frontend covers that channel; the agent covers everything public
+- Off-market reality: institutional hotel-lease deals are typically not published and cannot be scraped from broker sites — the agent covers what is publicly indexed (property portals, business-transfer marketplaces, hospitality news)
 
 ---
 
